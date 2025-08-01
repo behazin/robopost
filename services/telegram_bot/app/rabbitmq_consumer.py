@@ -13,9 +13,9 @@ def get_rabbit_client():
     return _rabbit_client
 
 class RabbitMQConsumer:
-    def __init__(self, url: str, bot, db_session_factory):
+    def __init__(self, url: str, bot_app, db_session_factory):
         self.url = url
-        self.bot = bot
+        self.bot_app = bot_app
         self.db_session_factory = db_session_factory
         self.connection = None
         self.channel = None
@@ -35,8 +35,9 @@ class RabbitMQConsumer:
                 data = json.loads(message.body.decode())
                 article_id = data.get("article_id")
                 if article_id:
+                    rate_limiter = self.bot_app.bot_data.get("rate_limiter")
                     logger.info(f"Received approval request for article_id: {article_id}")
-                    await send_approval_request(self.db_session_factory, self.bot, article_id)
+                    await send_approval_request(self.db_session_factory, self.bot_app.bot, article_id, rate_limiter)
                 await message.ack()
             except Exception as e:
                 logger.error(f"Failed to process approval message: {message.body.decode()}. Error: {e}", exc_info=True)

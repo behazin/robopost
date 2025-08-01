@@ -86,7 +86,7 @@ async def button_callback_handler(update: Update, context: ContextTypes.DEFAULT_
             await query.edit_message_text(text=f"❌ انتشار مقاله برای این مقصد توسط {user.full_name} رد شد.\n\n{query.message.text}")
 
 # This function is called by the RabbitMQ consumer
-async def send_approval_request(db_session_factory, bot, article_id: int):
+async def send_approval_request(db_session_factory, bot, article_id: int, rate_limiter=None):
     async with db_session_factory() as session:
         article = await session.get(Article, article_id)
         if not article or not article.assigned_destinations or article.status != ArticleStatus.PENDING_APPROVAL:
@@ -112,6 +112,9 @@ async def send_approval_request(db_session_factory, bot, article_id: int):
                         f"<b>عنوان:</b> {article.processed_title}\n\n"
                         f"<a href='{article.original_url}'>لینک اصلی</a>")
                 try:
+                    # Wait for our turn to send a message to respect API limits
+                    if rate_limiter:
+                        await rate_limiter.wait()
                     await bot.send_message(chat_id=tid, text=text, reply_markup=reply_markup, parse_mode='HTML')
                 except Exception as e:
                     logging.error(f"Failed to send message to admin {tid}: {e}")
