@@ -33,7 +33,8 @@ services:
 
   api_gateway:
     build:
-      context: ./services/api_gateway
+      context: .
+      dockerfile: ./services/api_gateway/Dockerfile
     container_name: robopost_api_gateway
     restart: always
     env_file:
@@ -47,7 +48,8 @@ services:
 
   source_fetcher:
     build:
-      context: ./services/source_fetcher
+      context: .
+      dockerfile: ./services/source_fetcher/Dockerfile
     container_name: robopost_source_fetcher
     restart: always
     env_file:
@@ -60,7 +62,8 @@ services:
 
   core_engine:
     build:
-      context: ./services/core_engine
+      context: .
+      dockerfile: ./services/core_engine/Dockerfile
     container_name: robopost_core_engine
     restart: always
     env_file:
@@ -74,7 +77,8 @@ services:
 
   telegram_bot:
     build:
-      context: ./services/telegram_bot
+      context: .
+      dockerfile: ./services/telegram_bot/Dockerfile
     container_name: robopost_telegram_bot
     restart: always
     env_file:
@@ -87,10 +91,11 @@ services:
       
   publisher_service:
     build:
-      context: ./services/publisher_service
+      context: .
+      dockerfile: ./services/publisher_service/Dockerfile
     container_name: robopost_publisher_service
     restart: always
-    command: celery -A app.celery_app.celery worker -l info
+    command: celery -A app.celery_app.celery worker -l info -Q q.publication
     env_file:
       - ./services/publisher_service/.env
     depends_on:
@@ -99,6 +104,21 @@ services:
     networks:
       - robopost_net
     # For scaling: docker-compose up --scale publisher_service=3
+
+  publisher_consumer:
+    build:
+      context: .
+      dockerfile: ./services/publisher_service/Dockerfile.consumer
+    container_name: robopost_publisher_consumer
+    restart: always
+    command: python -m app.consumer
+    env_file:
+      - ./services/publisher_service/.env
+    depends_on:
+      - rabbitmq
+      - publisher_service
+    networks:
+      - robopost_net
 
 volumes:
   mysql_data:

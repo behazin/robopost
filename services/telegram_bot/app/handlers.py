@@ -3,9 +3,9 @@ import json
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, update
 
-from .models import Admin, Article, Destination, AdminDestinationMap
+from robopost_models.models import Admin, Article, Destination, AdminDestinationMap, ArticleStatus
 from .rabbitmq_consumer import get_rabbit_client
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -60,27 +60,36 @@ async def button_callback_handler(update: Update, context: ContextTypes.DEFAULT_
                 "article_id": article_id,
                 "destination_id": destination_id
             }
+            # Routing key changed to trigger publisher service
             await rabbit_client.publish(
                 exchange='ex.articles',
-                routing_key='rk.publication_approved',
+                routing_key='rk.publication.approved',
                 body=json.dumps(message)
             )
-            await query.edit_message_text(text=f"✅ مقاله برای انتشار در این مقصد تایید شد.\n\n{query.message.text}")
+            await query.edit_message_text(text=f"✅ مقاله برای انتشار در این مقصد توسط {user.full_name} تایید شد.\n\n{query.message.text}")
         
         elif action == 'reject':
             if article.assigned_destinations:
                 # Remove the rejected destination from the list
-                article.assigned_destinations = [d for d in article.assigned_destinations if d.get("destination_id") != destination_id]
-                if not article.assigned_destinations: # If no destinations are left
-                    article.status = ArticleStatus.REJECTED
+                updated_destinations = [d for d in article.assigned_destinations if d.get("destination_id") != destination_id]
+
+                values_to_update = {"assigned_destinations": updated_destinations}
+
+                # If no destinations are left, mark the whole article as rejected
+                if not updated_destinations:
+                    values_to_update["status"] = ArticleStatus.REJECTED
+
+                stmt = update(Article).where(Article.id == article_id).values(**values_to_update)
+                await session.execute(stmt)                
                 await session.commit()
-            await query.edit_message_text(text=f"❌ انتشار مقاله برای این مقصد رد شد.\n\n{query.message.text}")
+
+            await query.edit_message_text(text=f"❌ انتشار مقاله برای این مقصد توسط {user.full_name} رد شد.\n\n{query.message.text}")
 
 # This function is called by the RabbitMQ consumer
 async def send_approval_request(db_session_factory, bot, article_id: int):
     async with db_session_factory() as session:
         article = await session.get(Article, article_id)
-        if not article or not article.assigned_destinations:
+        if not article or not article.assigned_destinations or article.status != ArticleStatus.PENDING_APPROVAL:
             return
 
         for dest_info in article.assigned_destinations:
@@ -100,9 +109,9 @@ async def send_approval_request(db_session_factory, bot, article_id: int):
                 ]
                 reply_markup = InlineKeyboardMarkup(keyboard)
                 text = (f"👇🏼 درخواست تایید محتوای جدید برای مقصد '{dest.name} - {dest.platform.value}'\n\n"
-                        f"**عنوان:** {article.processed_title}\n\n"
-                        f"**لینک اصلی:** {article.original_url}")
+                        f"<b>عنوان:</b> {article.processed_title}\n\n"
+                        f"<a href='{article.original_url}'>لینک اصلی</a>")
                 try:
-                    await bot.send_message(chat_id=tid, text=text, reply_markup=reply_markup, parse_mode='Markdown')
+                    await bot.send_message(chat_id=tid, text=text, reply_markup=reply_markup, parse_mode='HTML')
                 except Exception as e:
                     logging.error(f"Failed to send message to admin {tid}: {e}")

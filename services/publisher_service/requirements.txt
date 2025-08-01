@@ -1,1 +1,9 @@
-##There is no code here
+celery[redis]
+sqlalchemy
+mysqlclient
+python-dotenv
+python-json-logger
+prometheus-client
+fastapi
+uvicorn[standard]
+python-wordpress-xmlrpc

@@ -1,19 +1,23 @@
 global:
   scrape_interval: 15s
 
+# A scrape configuration containing exactly one endpoint to scrape:
 scrape_configs:
+  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
   - job_name: 'api_gateway'
+    # metrics_path defaults to '/metrics'
+    # scheme defaults to 'http'.
     static_configs:
-      - targets: ['api_gateway:8000']
+      - targets: ['api_gateway:8000'] # Service name from docker-compose.yml
   - job_name: 'source_fetcher'
     static_configs:
-      - targets: ['source_fetcher:8000'] # Adjust port if needed
+      - targets: ['source_fetcher:8001'] # Each service should expose metrics on a unique port
   - job_name: 'core_engine'
     static_configs:
-      - targets: ['core_engine:8000'] # Adjust port if needed
+      - targets: ['core_engine:8002']
   - job_name: 'telegram_bot'
     static_configs:
-      - targets: ['telegram_bot:8000'] # Adjust port if needed
+      - targets: ['telegram_bot:8003']
   - job_name: 'publisher_service'
     static_configs:
-      - targets: ['publisher_service:8000'] # Adjust port if needed
+      - targets: ['publisher_service:8004']
