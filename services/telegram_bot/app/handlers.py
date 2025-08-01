@@ -25,29 +25,56 @@ async def button_callback_handler(update: Update, context: ContextTypes.DEFAULT_
     query = update.callback_query
     await query.answer()
 
+    user = update.effective_user
     action, article_id_str, dest_id_str = query.data.split(':')
     article_id = int(article_id_str)
     destination_id = int(dest_id_str)
 
-    # Security check: Does this admin manage this destination?
-    # ... implementation omitted for brevity ...
+    async with context.bot_data["db_session_factory"]() as session:
+        # Security check: Does this admin manage this destination?
+        admin_q = select(Admin).where(Admin.telegram_id == str(user.id))
+        admin = await session.scalar(admin_q)
+        if not admin:
+            await query.answer("شما به عنوان ادمین ثبت نشده‌اید.", show_alert=True)
+            return
 
-    if action == 'approve':
-        rabbit_client = get_rabbit_client()
-        message = {
-            "article_id": article_id,
-            "destination_id": destination_id
-        }
-        await rabbit_client.publish(
-            exchange='ex.articles',
-            routing_key='rk.publication_approved',
-            body=json.dumps(message)
+        q = select(AdminDestinationMap).where(
+            AdminDestinationMap.admin_id == admin.id,
+            AdminDestinationMap.destination_id == destination_id
         )
-        await query.edit_message_text(text=f"✅ مقاله برای انتشار در مقصد تایید شد.\n\n{query.message.text}")
-    
-    elif action == 'reject':
-        # Logic to update article status to REJECTED
-        await query.edit_message_text(text=f"❌ مقاله رد شد.\n\n{query.message.text}")
+        is_authorized = (await session.execute(q)).scalar_one_or_none()
+
+        if not is_authorized:
+            await query.answer("شما مجوز مدیریت این مقصد را ندارید.", show_alert=True)
+            logging.warning(f"Unauthorized access attempt by admin {user.id} for destination {destination_id}")
+            return
+
+        article = await session.get(Article, article_id)
+        if not article:
+            await query.edit_message_text(text="خطا: مقاله یافت نشد.")
+            return
+
+        if action == 'approve':
+            rabbit_client = get_rabbit_client()
+            message = {
+                "article_id": article_id,
+                "destination_id": destination_id
+            }
+            await rabbit_client.publish(
+                exchange='ex.articles',
+                routing_key='rk.publication_approved',
+                body=json.dumps(message)
+            )
+            await query.edit_message_text(text=f"✅ مقاله برای انتشار در این مقصد تایید شد.\n\n{query.message.text}")
+        
+        elif action == 'reject':
+            if article.assigned_destinations:
+                # Remove the rejected destination from the list
+                article.assigned_destinations = [d for d in article.assigned_destinations if d.get("destination_id") != destination_id]
+                if not article.assigned_destinations: # If no destinations are left
+                    article.status = ArticleStatus.REJECTED
+                await session.commit()
+            await query.edit_message_text(text=f"❌ انتشار مقاله برای این مقصد رد شد.\n\n{query.message.text}")
 
 # This function is called by the RabbitMQ consumer
 async def send_approval_request(db_session_factory, bot, article_id: int):
