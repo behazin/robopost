@@ -1,0 +1,7 @@
+sqlalchemy
+aiomysql
+pika
+feedparser
+aiohttp
+python-dotenv
+python-json-logger

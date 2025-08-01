@@ -1,0 +1,7 @@
+[summarize]
+system_prompt = "You are a helpful assistant that summarizes web articles."
+human_prompt = "Summarize the following article content in a concise and engaging way for social media:\n\n{content}"
+
+[generate_title]
+system_prompt = "You are a helpful assistant that writes compelling titles."
+human_prompt = "Based on the following content, generate a short, catchy title (less than 10 words):\n\n{content}"

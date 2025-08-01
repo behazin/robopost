@@ -1,0 +1,14 @@
+# To be implemented for CI/CD testing pipeline
+# This would typically involve:
+# - Using a separate test database
+# - Mocking external services like RabbitMQ or using a test-specific instance
+# - Running pytest against the services
+version: '3.8'
+
+services:
+  test_runner:
+    build:
+      context: .
+      dockerfile: Dockerfile.test # A special Dockerfile for testing
+    command: pytest
+    # ... more config
