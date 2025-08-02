@@ -1,0 +1,33 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+.venv/
+venv/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Python egg metadata, build, and dist
+build/
+dist/
+*.egg-info/
+
+# Logs
+*.log
+
+# Pytest and coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE directories
+.vscode/
+.idea/
+
+# Docker
+**/Dockerfile~
+.DS_Store

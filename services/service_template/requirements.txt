@@ -1,0 +1,4 @@
+pika
+SQLAlchemy
+pymysql
+python-json-logger
