@@ -4,9 +4,7 @@ from pydantic import BaseSettings
 class Settings(BaseSettings):
     DATABASE_URL: str
     RABBITMQ_URL: str
-    CELERY_BROKER_URL: str
-    CELERY_RESULT_BACKEND: str
-    METRICS_PORT: int = 8004
+    FETCH_INTERVAL_SECONDS: int = 60
 
     class Config:
         env_file = '.env'

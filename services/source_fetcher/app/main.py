@@ -1,22 +1,19 @@
 import asyncio
-import os
 import logging
-from dotenv import load_dotenv
-
-load_dotenv()
 
 from .fetcher import Fetcher
 from .db import SessionLocal
 from .rabbitmq import RabbitMQClient
+from .config import settings
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 async def main():
-    fetch_interval = int(os.getenv("FETCH_INTERVAL_SECONDS", 60))
+    fetch_interval = settings.FETCH_INTERVAL_SECONDS
     
     # Initialize components
     db_session = SessionLocal()
-    rabbit_client = RabbitMQClient(os.getenv("RABBITMQ_URL"))
+    rabbit_client = RabbitMQClient(settings.RABBITMQ_URL)
     
     fetcher = Fetcher(db_session, rabbit_client)
 

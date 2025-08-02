@@ -1,13 +1,10 @@
-import os
 from celery import Celery
-from dotenv import load_dotenv
-
-load_dotenv()
+from .config import settings
 
 celery = Celery(
     'robopost_publisher',
-    broker=os.getenv('CELERY_BROKER_URL'),
-    backend=os.getenv('CELERY_RESULT_BACKEND'),
+    broker=settings.CELERY_BROKER_URL,
+    backend=settings.CELERY_RESULT_BACKEND,
     include=['app.tasks']
 )
 

@@ -1,22 +1,17 @@
 import asyncio
 import json
 import logging
-import os
 import aio_pika
-from dotenv import load_dotenv
 
 # Make sure to import the task from where it's defined.
 # Assuming it's in tasks.py which is included by celery_app.py
 from app.tasks import publish_article_task
 
-load_dotenv()
+from .config import settings
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 async def main():
-    rabbitmq_url = os.getenv("RABBITMQ_URL")
-    if not rabbitmq_url:
-        logging.error("RABBITMQ_URL environment variable not set.")
-        return
+    rabbitmq_url = settings.RABBITMQ_URL 
 
     connection = await aio_pika.connect_robust(rabbitmq_url)
     async with connection:
