@@ -1,4 +1,4 @@
-import os
+from contextlib import contextmanager
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -27,3 +27,15 @@ def get_session():
     if _SessionLocal is None:
         _SessionLocal = sessionmaker(bind=get_engine(), autocommit=False, autoflush=False)
     return _SessionLocal()
+
+@contextmanager
+def session_scope():
+    session = get_session()
+    try:
+        yield session
+        session.commit()
+    except:
+        session.rollback()
+        raise
+    finally:
+        session.close()

@@ -1,4 +1,4 @@
-from .db import get_engine, get_session
+from .db import get_engine, get_session, session_scope
 from .rabbitmq import get_rabbitmq_connection
 from .logging import configure_logging
 

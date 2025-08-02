@@ -25,7 +25,9 @@ services:
       - "15672:15672"
 
   service_template:
-    build: ./services/service_template
+    build:
+      context: .
+      dockerfile: services/service_template/Dockerfile
     environment:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
