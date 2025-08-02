@@ -1,7 +1,17 @@
-from setuptools import setup, find_packages
+FROM python:3.9-slim
 
-setup(
-    name="robopost_models",
-    version="0.1.0",
-    packages=find_packages(),
-)
+WORKDIR /app
+
+# Copy and install the shared models library first
+COPY ./shared/models /app/shared/models
+RUN pip install --no-cache-dir -e ./shared/models
+
+# Copy and install service-specific requirements
+COPY ./services/publisher_service/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the application code
+COPY ./services/publisher_service/app ./app
+
+# The command to run the consumer script
+CMD ["python", "-m", "app.consumer"]
