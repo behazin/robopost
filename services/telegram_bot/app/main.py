@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import logging.config
+from pathlib import Path
 
 from .config import settings
 from .bot import create_bot_app
@@ -8,7 +9,11 @@ from .rabbitmq_consumer import RabbitMQConsumer
 from .database import get_session_factory, init_db
 from .monitoring import setup_monitoring_app
 
-logging.config.fileConfig('logging.conf', disable_existing_loggers=False)
+LOGGING_CONFIG = Path(__file__).resolve().parent.parent / "logging.conf"
+if not LOGGING_CONFIG.exists():
+    LOGGING_CONFIG = Path(__file__).resolve().parents[3] / "logging.conf"
+logging.config.fileConfig(LOGGING_CONFIG, disable_existing_loggers=False)
+logger = logging.getLogger(__name__)
 logger = logging.getLogger(__name__)
 
 async def main():

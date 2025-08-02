@@ -1,6 +1,6 @@
 import logging
 import logging.config
-import os
+from pathlib import Path
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
@@ -22,8 +22,11 @@ except ModuleNotFoundError:  # pragma: no cover
 from . import crud, schemas
 from .db import get_db, init_db
 
-if os.path.exists('logging.conf'):
-    logging.config.fileConfig('logging.conf', disable_existing_loggers=False)
+LOGGING_CONFIG = Path(__file__).resolve().parent.parent / "logging.conf"
+if not LOGGING_CONFIG.exists():
+    LOGGING_CONFIG = Path(__file__).resolve().parents[3] / "logging.conf"
+if LOGGING_CONFIG.exists():
+    logging.config.fileConfig(LOGGING_CONFIG, disable_existing_loggers=False)
 else:  # pragma: no cover - default logging setup for tests
     logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

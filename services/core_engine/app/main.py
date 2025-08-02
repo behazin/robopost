@@ -3,6 +3,7 @@ import json
 import logging
 import logging.config
 from functools import partial
+from pathlib import Path
 
 from .config import settings
 from .database import get_session
@@ -10,7 +11,10 @@ from .rabbitmq import RabbitMQClient
 from .processor import ArticleProcessor
 from .monitoring import setup_monitoring_app
 
-logging.config.fileConfig('logging.conf', disable_existing_loggers=False)
+LOGGING_CONFIG = Path(__file__).resolve().parent.parent / "logging.conf"
+if not LOGGING_CONFIG.exists():
+    LOGGING_CONFIG = Path(__file__).resolve().parents[3] / "logging.conf"
+logging.config.fileConfig(LOGGING_CONFIG, disable_existing_loggers=False)
 logger = logging.getLogger(__name__)
 
 async def on_message(

@@ -1,6 +1,6 @@
 """Shared SQLAlchemy models used across RoboPost services."""
 
-from models import (
+from .models import (
     Base,
     ArticleStatus,
     Platform,
