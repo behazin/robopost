@@ -2,6 +2,8 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+ENV PYTHONPATH=/app
+
 # Install dependencies
 COPY services/service_template/requirements.txt ./requirements.txt
 
