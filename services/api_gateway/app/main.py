@@ -1,13 +1,31 @@
+import logging
 import logging.config
+import os
 from fastapi import FastAPI, Depends, HTTPException
-from prometheus_fastapi_instrumentator import Instrumentator
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
+
+# The Prometheus instrumentation library is optional during testing.  If it is
+# not installed we fall back to a no-op shim so the application can still be
+# imported and exercised.
+try:  # pragma: no cover - exercised indirectly in tests
+    from prometheus_fastapi_instrumentator import Instrumentator  # type: ignore
+except ModuleNotFoundError:  # pragma: no cover
+    class Instrumentator:  # type: ignore
+        def instrument(self, app):
+            return self
+
+        def expose(self, app, include_in_schema=False):
+            return self
+
 
 from . import crud, schemas
 from .db import get_db, init_db
 
-logging.config.fileConfig('logging.conf', disable_existing_loggers=False)
+if os.path.exists('logging.conf'):
+    logging.config.fileConfig('logging.conf', disable_existing_loggers=False)
+else:  # pragma: no cover - default logging setup for tests
+    logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(
