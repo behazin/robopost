@@ -21,10 +21,10 @@ services:
       - "15672:15672"
 
   source_crawler:
-    image: python:3.11-slim
+    build:
+      context: .
+      dockerfile: services/source_crawler/Dockerfile
     working_dir: /app
-    command: >-
-      sh -c "pip install --no-cache-dir -r service/requirements.txt && python service/app.py"
     volumes:
       - ./common_utils:/app/common_utils
       - ./services/source_crawler:/app/service
@@ -42,15 +42,16 @@ services:
       GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS}
       GOOGLE_PROJECT_ID: ${GOOGLE_PROJECT_ID}
       CRAWLER_INTERVAL_SECONDS: ${CRAWLER_INTERVAL_SECONDS}
+      PYTHONPATH: /app
     depends_on:
       - mysql
       - rabbitmq
 
   core_engine:
-    image: python:3.11-slim
+    build:
+      context: .
+      dockerfile: services/core_engine/Dockerfile
     working_dir: /app
-    command: >-
-      sh -c "pip install --no-cache-dir -r service/requirements.txt && python service/app.py"
     volumes:
       - ./common_utils:/app/common_utils
       - ./services/core_engine:/app/service
@@ -67,6 +68,7 @@ services:
       LOG_LEVEL: ${LOG_LEVEL}
       GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS}
       GOOGLE_PROJECT_ID: ${GOOGLE_PROJECT_ID}
+      PYTHONPATH: /app
     depends_on:
       - mysql
       - rabbitmq
