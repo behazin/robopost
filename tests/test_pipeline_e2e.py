@@ -21,6 +21,10 @@ def wait_for(condition, timeout=10, interval=0.1):
 
 def test_pipeline_e2e(monkeypatch):
     # Stub external dependencies before importing core_engine
+    fake_feed = types.SimpleNamespace(
+        entries=[types.SimpleNamespace(link="https://example.com/article")]
+    )
+    monkeypatch.setattr(feedparser, "parse", lambda url: fake_feed)
     translate_stub = types.SimpleNamespace(
         Client=lambda: types.SimpleNamespace(
             translate=lambda text, target_language: {"translatedText": text}
@@ -81,10 +85,9 @@ def test_pipeline_e2e(monkeypatch):
     core_thread.start()
     time.sleep(1)  # allow consumer to start
 
-    feed = feedparser.parse("https://techcrunch.com/feed/")
-    expected_link = feed.entries[0].link
+    expected_link = fake_feed.entries[0].link
 
-    os.environ[crawler_app.FEEDS_ENV_VAR] = "https://techcrunch.com/feed/"
+    os.environ[crawler_app.FEEDS_ENV_VAR] = "https://example.com/feed"
     os.environ[crawler_app.INTERVAL_ENV_VAR] = "1"
 
     crawler_thread = threading.Thread(target=crawler_app.main, daemon=True)
