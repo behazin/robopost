@@ -6,6 +6,7 @@ from common_utils import (
 from services.core_engine.database import init_db
 from services.core_engine.models import Article
 
+import os
 import trafilatura
 from google.cloud import translate_v2 as translate
 from google.cloud import aiplatform
@@ -40,7 +41,10 @@ def main():
     logger.info("Core engine starting")
     init_db()
     translator = translate.Client()
-    aiplatform.init()
+    aiplatform.init(
+        project=os.getenv("GOOGLE_PROJECT_ID"),
+        location="us-central1",
+    )
     summarizer = aiplatform.TextGenerationModel.from_pretrained("text-bison")
     conn = get_rabbitmq_connection()
     channel = conn.channel()
