@@ -4,17 +4,17 @@ import time
 import pika
 
 
-DEFAULT_MAX_RETRIES = 5
-DEFAULT_BASE_DELAY = 1  # seconds
+DEFAULT_BASE_DELAY = 5  # seconds
 
 
-def get_rabbitmq_connection(max_retries: int = DEFAULT_MAX_RETRIES) -> pika.BlockingConnection:
+def get_rabbitmq_connection(max_retries: int | None = None) -> pika.BlockingConnection:
     """Get a RabbitMQ connection, retrying with exponential backoff.
 
     Parameters
     ----------
     max_retries:
-        Number of attempts before giving up.
+        Optional number of attempts before giving up. If ``None`` the function
+        will keep retrying indefinitely until a connection is established.
     """
 
     user = os.getenv("RABBITMQ_USER", "guest")
@@ -31,7 +31,7 @@ def get_rabbitmq_connection(max_retries: int = DEFAULT_MAX_RETRIES) -> pika.Bloc
             return pika.BlockingConnection(parameters)
         except pika.exceptions.AMQPConnectionError:
             attempt += 1
-            if attempt >= max_retries:
+            if max_retries is not None and attempt >= max_retries:
                 raise
             delay = DEFAULT_BASE_DELAY * (2 ** (attempt - 1))
             time.sleep(delay)
