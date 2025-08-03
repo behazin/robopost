@@ -21,6 +21,11 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   service_template:
     build:
@@ -40,8 +45,8 @@ services:
       GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS}
       GOOGLE_PROJECT_ID: ${GOOGLE_PROJECT_ID}
     depends_on:
-      - mysql
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
 
   source_crawler:
     build:
