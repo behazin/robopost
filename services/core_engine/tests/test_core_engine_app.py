@@ -38,10 +38,10 @@ def test_process_url_persists_article(monkeypatch):
     monkeypatch.setitem(sys.modules, "trafilatura", trafilatura_stub)
 
     import services.core_engine.app as core_app
-    from services.core_engine.models import Base, Article
+    from services.core_engine.models import Article
 
     engine = create_engine("sqlite:///:memory:")
-    Base.metadata.create_all(engine)
+    core_app.init_db(engine)
     Session = sessionmaker(bind=engine)
 
     @contextmanager

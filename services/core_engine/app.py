@@ -3,6 +3,7 @@ from common_utils import (
     get_rabbitmq_connection,
     session_scope,
 )
+from services.core_engine.database import init_db
 from services.core_engine.models import Article
 
 import trafilatura
@@ -37,6 +38,7 @@ def process_url(url, translator, summarizer, logger):
 def main():
     logger = configure_logging()
     logger.info("Core engine starting")
+    init_db()
     translator = translate.Client()
     aiplatform.init()
     summarizer = aiplatform.TextGenerationModel.from_pretrained("text-bison")
