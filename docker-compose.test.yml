@@ -20,10 +20,30 @@ services:
       - "5672:5672"
       - "15672:15672"
 
+  source_crawler:
+    build:
+      context: .
+      dockerfile: services/source_crawler/Dockerfile
+    environment:
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DB: ${MYSQL_DB}
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      LOG_LEVEL: ${LOG_LEVEL}
+    depends_on:
+      - mysql
+      - rabbitmq
+
+
   test:
     build:
       context: .
-      dockerfile: services/service_template/Dockerfile
+      dockerfile: services/source_crawler/Dockerfile
     command: >-
       sh -c "pip install -r requirements-dev.txt && coverage run -m pytest && coverage xml"
     volumes:
@@ -42,3 +62,4 @@ services:
     depends_on:
       - mysql
       - rabbitmq
+      

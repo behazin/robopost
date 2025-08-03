@@ -1,0 +1,6 @@
+pika
+SQLAlchemy
+pymysql
+python-json-logger
+feedparser
+schedule

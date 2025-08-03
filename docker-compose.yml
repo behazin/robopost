@@ -41,5 +41,25 @@ services:
       - mysql
       - rabbitmq
 
+  source_crawler:
+    build:
+      context: .
+      dockerfile: services/source_crawler/Dockerfile
+    environment:
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DB: ${MYSQL_DB}
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      LOG_LEVEL: ${LOG_LEVEL}
+    depends_on:
+      - mysql
+      - rabbitmq
+
+
 volumes:
   mysql_data:
