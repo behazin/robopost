@@ -22,3 +22,13 @@ coverage run -m pytest
 coverage report
 ```
 The pytest configuration enables asyncio support and coverage settings.
+
+## Rebuilding Containers
+
+After making changes, rebuild the service containers so that code and dependency updates are reflected:
+
+```bash
+docker compose build
+# or
+docker compose up --build
+```
