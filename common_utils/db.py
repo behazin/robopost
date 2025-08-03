@@ -35,7 +35,8 @@ def session_scope():
     try:
         yield session
         session.commit()
-    except:
+    except Exception:
+        # Roll back to prevent partial transactions from being committed on failure
         session.rollback()
         raise
     finally:
