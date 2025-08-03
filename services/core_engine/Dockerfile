@@ -9,6 +9,6 @@ COPY services/core_engine/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY common_utils ./common_utils
-COPY services/core_engine/ ./service
+COPY services/core_engine /app/services/core_engine
 
-CMD ["python", "service/app.py"]
+CMD ["python", "-m", "services.core_engine.app"]
