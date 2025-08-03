@@ -1,0 +1,13 @@
+coverage:
+  status:
+    project:
+      default:
+        target: 80
+    patch:
+      default:
+        target: 80
+flags:
+  unittests:
+    paths:
+      - services
+      - common_utils

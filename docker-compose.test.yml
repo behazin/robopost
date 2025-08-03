@@ -24,7 +24,8 @@ services:
     build:
       context: .
       dockerfile: services/service_template/Dockerfile
-    command: sh -c "pip install pytest && pytest"
+    command: >-
+      sh -c "pip install -r requirements-dev.txt && coverage run -m pytest && coverage xml"
     volumes:
       - .:/app
     environment:
