@@ -21,9 +21,13 @@ services:
       - "15672:15672"
 
   source_crawler:
-    build:
-      context: .
-      dockerfile: services/source_crawler/Dockerfile
+    image: python:3.11-slim
+    working_dir: /app
+    command: >-
+      sh -c "pip install --no-cache-dir -r service/requirements.txt && python service/app.py"
+    volumes:
+      - ./common_utils:/app/common_utils
+      - ./services/source_crawler:/app/service
     environment:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
@@ -43,9 +47,13 @@ services:
       - rabbitmq
 
   core_engine:
-    build:
-      context: .
-      dockerfile: services/core_engine/Dockerfile
+    image: python:3.11-slim
+    working_dir: /app
+    command: >-
+      sh -c "pip install --no-cache-dir -r service/requirements.txt && python service/app.py"
+    volumes:
+      - ./common_utils:/app/common_utils
+      - ./services/core_engine:/app/service
     environment:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
