@@ -3,6 +3,7 @@ import time
 from typing import Iterable, Set
 
 import feedparser
+import pika
 import schedule
 
 from common_utils import configure_logging, get_rabbitmq_connection
@@ -26,7 +27,12 @@ def fetch_and_publish(conn, feeds: Iterable[str], seen: Set[str], logger):
             link = entry.get("link")
             if link and link not in seen:
                 seen.add(link)
-                channel.basic_publish(exchange="", routing_key="url.new", body=link)
+                channel.basic_publish(
+                    exchange="",
+                    routing_key="url.new",
+                    body=link.encode(),
+                    properties=pika.BasicProperties(delivery_mode=2),
+                )
                 logger.info("Published new URL", extra={"url": link})
     channel.close()
 

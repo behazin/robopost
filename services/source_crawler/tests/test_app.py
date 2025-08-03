@@ -11,7 +11,7 @@ class DummyChannel:
     def queue_declare(self, queue, durable):
         pass
 
-    def basic_publish(self, exchange, routing_key, body):
+    def basic_publish(self, exchange, routing_key, body, properties=None):
         self.messages.append((routing_key, body))
 
     def close(self):
@@ -39,7 +39,7 @@ def test_fetch_and_publish_emits_new_items(monkeypatch):
     monkeypatch.setattr("services.source_crawler.app.feedparser.parse", first_parse)
     fetch_and_publish(conn, feeds, seen, logger)
 
-    assert channel.messages == [("url.new", "http://example.com/a")]
+    assert channel.messages == [("url.new", b"http://example.com/a")]
 
     def second_parse(url):
         return types.SimpleNamespace(entries=[{"link": "http://example.com/a"}, {"link": "http://example.com/b"}])
@@ -48,6 +48,6 @@ def test_fetch_and_publish_emits_new_items(monkeypatch):
     fetch_and_publish(conn, feeds, seen, logger)
 
     assert channel.messages == [
-        ("url.new", "http://example.com/a"),
-        ("url.new", "http://example.com/b"),
+        ("url.new", b"http://example.com/a"),
+        ("url.new", b"http://example.com/b"),
     ]
