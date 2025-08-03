@@ -37,6 +37,8 @@ services:
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
       LOG_LEVEL: ${LOG_LEVEL}
+      GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS}
+      GOOGLE_PROJECT_ID: ${GOOGLE_PROJECT_ID}
     depends_on:
       - mysql
       - rabbitmq
@@ -56,6 +58,9 @@ services:
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
       LOG_LEVEL: ${LOG_LEVEL}
+      GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS}
+      GOOGLE_PROJECT_ID: ${GOOGLE_PROJECT_ID}
+      CRAWLER_INTERVAL_SECONDS: ${CRAWLER_INTERVAL_SECONDS}
     depends_on:
       - mysql
       - rabbitmq
@@ -75,6 +80,8 @@ services:
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
       LOG_LEVEL: ${LOG_LEVEL}
+      GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS}
+      GOOGLE_PROJECT_ID: ${GOOGLE_PROJECT_ID}
     depends_on:
       - mysql
       - rabbitmq

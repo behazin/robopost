@@ -1,4 +1,9 @@
 # Robopost
+## Environment Variables
+
+- `GOOGLE_APPLICATION_CREDENTIALS`: Path to a Google Cloud service account JSON key file.
+- `GOOGLE_PROJECT_ID`: Identifier of the Google Cloud project.
+- `CRAWLER_INTERVAL_SECONDS`: Interval in seconds for the source crawler scheduler.
 
 ## Running Tests
 

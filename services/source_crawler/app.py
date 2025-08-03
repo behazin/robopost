@@ -9,7 +9,7 @@ from common_utils import configure_logging, get_rabbitmq_connection
 
 
 FEEDS_ENV_VAR = "RSS_FEEDS"
-INTERVAL_ENV_VAR = "CRAWL_INTERVAL"
+INTERVAL_ENV_VAR = "CRAWLER_INTERVAL_SECONDS"
 
 
 def fetch_and_publish(conn, feeds: Iterable[str], seen: Set[str], logger):
