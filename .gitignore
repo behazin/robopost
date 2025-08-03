@@ -11,6 +11,9 @@ venv/
 .env.*
 !.env.example
 
+# Credentials
+final-news-bot-project-c1ebd88ef6ca.json
+
 # Python egg metadata, build, and dist
 build/
 dist/
