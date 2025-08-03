@@ -9,7 +9,8 @@ from services.core_engine.models import Article
 import os
 import trafilatura
 from google.cloud import translate_v2 as translate
-from google.cloud import aiplatform
+from vertexai import init
+from vertexai.preview.language_models import TextGenerationModel
 
 
 def process_url(url, translator, summarizer, logger):
@@ -41,11 +42,11 @@ def main():
     logger.info("Core engine starting")
     init_db()
     translator = translate.Client()
-    aiplatform.init(
+    init(
         project=os.getenv("GOOGLE_PROJECT_ID"),
-        location="us-central1",
+        location=os.getenv("GOOGLE_LOCATION", "us-central1"),
     )
-    summarizer = aiplatform.TextGenerationModel.from_pretrained("text-bison")
+    summarizer = TextGenerationModel.from_pretrained("text-bison")
     conn = get_rabbitmq_connection()
     channel = conn.channel()
     channel.queue_declare(queue="url.new", durable=True)

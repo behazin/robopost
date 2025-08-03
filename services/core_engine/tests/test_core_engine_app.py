@@ -17,19 +17,26 @@ def test_process_url_persists_article(monkeypatch):
     summarizer_model = types.SimpleNamespace(
         predict=lambda text: types.SimpleNamespace(text="summary")
     )
-    aiplatform_stub = types.SimpleNamespace(
-        init=lambda: None,
-        TextGenerationModel=types.SimpleNamespace(
-            from_pretrained=lambda name: summarizer_model
-        ),
+    text_gen_module = types.ModuleType("language_models")
+    text_gen_module.TextGenerationModel = types.SimpleNamespace(
+        from_pretrained=lambda name: summarizer_model
     )
-    fake_google_cloud = types.SimpleNamespace(
-        translate_v2=translate_stub, aiplatform=aiplatform_stub
+    vertexai_preview = types.ModuleType("preview")
+    vertexai_preview.language_models = text_gen_module
+    vertexai_stub = types.ModuleType("vertexai")
+    vertexai_stub.init = lambda **kwargs: None
+    vertexai_stub.preview = vertexai_preview
+    monkeypatch.setitem(sys.modules, "vertexai", vertexai_stub)
+    monkeypatch.setitem(sys.modules, "vertexai.preview", vertexai_preview)
+    monkeypatch.setitem(
+        sys.modules,
+        "vertexai.preview.language_models",
+        text_gen_module,
     )
+    fake_google_cloud = types.SimpleNamespace(translate_v2=translate_stub)
     monkeypatch.setitem(sys.modules, "google", types.SimpleNamespace(cloud=fake_google_cloud))
     monkeypatch.setitem(sys.modules, "google.cloud", fake_google_cloud)
     monkeypatch.setitem(sys.modules, "google.cloud.translate_v2", translate_stub)
-    monkeypatch.setitem(sys.modules, "google.cloud.aiplatform", aiplatform_stub)
 
     trafilatura_stub = types.SimpleNamespace(
         fetch_url=lambda url: "html",
@@ -56,7 +63,7 @@ def test_process_url_persists_article(monkeypatch):
     monkeypatch.setattr(core_app, "session_scope", fake_session_scope)
 
     translator = translate_stub.Client()
-    summarizer = aiplatform_stub.TextGenerationModel.from_pretrained("text-bison")
+    summarizer = text_gen_module.TextGenerationModel.from_pretrained("text-bison")
     logger = configure_logging()
 
     core_app.process_url("http://example.com", translator, summarizer, logger)
@@ -70,3 +77,4 @@ def test_process_url_persists_article(monkeypatch):
         assert article.translated_content == "translated"
         assert article.summary == "summary"
         assert article.status == "PENDING_APPROVAL"
+        
