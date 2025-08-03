@@ -63,6 +63,7 @@ services:
     volumes:
       - ./common_utils:/app/common_utils
       - ./services/source_crawler:/app/service
+      - ./final-news-bot-project-c1ebd88ef6ca.json:/app/final-news-bot-project-c1ebd88ef6ca.json:ro
     environment:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
@@ -92,6 +93,7 @@ services:
     volumes:
       - ./common_utils:/app/common_utils
       - ./services/core_engine:/app/service
+      - ./final-news-bot-project-c1ebd88ef6ca.json:/app/final-news-bot-project-c1ebd88ef6ca.json:ro
     environment:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
