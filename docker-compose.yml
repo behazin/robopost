@@ -11,6 +11,11 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -45,6 +50,8 @@ services:
       GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS}
       GOOGLE_PROJECT_ID: ${GOOGLE_PROJECT_ID}
     depends_on:
+      mysql:
+        condition: service_healthy
       rabbitmq:
         condition: service_healthy
 
@@ -72,8 +79,10 @@ services:
       CRAWLER_INTERVAL_SECONDS: ${CRAWLER_INTERVAL_SECONDS}
       PYTHONPATH: /app
     depends_on:
-      - mysql
-      - rabbitmq
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
 
   core_engine:
     build:
@@ -98,8 +107,10 @@ services:
       GOOGLE_PROJECT_ID: ${GOOGLE_PROJECT_ID}
       PYTHONPATH: /app
     depends_on:
-      - mysql
-      - rabbitmq
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
 
 
 
