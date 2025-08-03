@@ -3,7 +3,7 @@ import sys
 import threading
 import time
 import types
-
+import feedparser
 import pytest
 
 from common_utils import session_scope, get_engine, get_rabbitmq_connection
@@ -81,12 +81,10 @@ def test_pipeline_e2e(monkeypatch):
     core_thread.start()
     time.sleep(1)  # allow consumer to start
 
-    # Mock feedparser to return a single URL
-    def mock_parse(url):
-        return types.SimpleNamespace(entries=[{"link": "http://example.com/article"}])
-    monkeypatch.setattr(crawler_app.feedparser, "parse", mock_parse)
+    feed = feedparser.parse("https://techcrunch.com/feed/")
+    expected_link = feed.entries[0].link
 
-    os.environ[crawler_app.FEEDS_ENV_VAR] = "http://example.com/feed"
+    os.environ[crawler_app.FEEDS_ENV_VAR] = "https://techcrunch.com/feed/"
     os.environ[crawler_app.INTERVAL_ENV_VAR] = "1"
 
     crawler_thread = threading.Thread(target=crawler_app.main, daemon=True)
@@ -96,7 +94,7 @@ def test_pipeline_e2e(monkeypatch):
         with session_scope() as session:
             return (
                 session.query(Article)
-                .filter_by(source_url="http://example.com/article")
+                .filter_by(source_url=expected_link)
                 .first()
                 is not None
             )
@@ -106,7 +104,7 @@ def test_pipeline_e2e(monkeypatch):
     with session_scope() as session:
         article = (
             session.query(Article)
-            .filter_by(source_url="http://example.com/article")
+            .filter_by(source_url=expected_link)
             .one()
         )
         assert article.status == "PENDING_APPROVAL"
