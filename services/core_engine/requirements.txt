@@ -1,0 +1,7 @@
+pika
+SQLAlchemy
+pymysql
+python-json-logger
+trafilatura
+google-cloud-translate
+google-cloud-aiplatform
