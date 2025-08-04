@@ -12,6 +12,13 @@ from google.cloud import translate_v2 as translate
 from vertexai import init
 from vertexai.preview.language_models import TextGenerationModel
 
+init(
+    project=os.getenv("GOOGLE_PROJECT_ID"),
+    location=os.getenv("GOOGLE_LOCATION", "us-central1"),
+)
+summarizer = TextGenerationModel.from_pretrained("text-bison")
+
+
 
 def process_url(url, translator, summarizer, logger):
     """Fetch, translate, summarize and persist an article."""
@@ -42,11 +49,6 @@ def main():
     logger.info("Core engine starting")
     init_db()
     translator = translate.Client()
-    init(
-        project=os.getenv("GOOGLE_PROJECT_ID"),
-        location=os.getenv("GOOGLE_LOCATION", "us-central1"),
-    )
-    summarizer = TextGenerationModel.from_pretrained("text-bison")
     conn = get_rabbitmq_connection()
     channel = conn.channel()
     channel.queue_declare(queue="url.new", durable=True)

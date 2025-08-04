@@ -33,19 +33,22 @@ def test_pipeline_e2e(monkeypatch):
     summarizer_model = types.SimpleNamespace(
         predict=lambda text: types.SimpleNamespace(text="summary")
     )
-    aiplatform_stub = types.SimpleNamespace(
-        init=lambda: None,
-        TextGenerationModel=types.SimpleNamespace(
-            from_pretrained=lambda name: summarizer_model
-        ),
-    )
-    fake_google_cloud = types.SimpleNamespace(
-        translate_v2=translate_stub, aiplatform=aiplatform_stub
-    )
+
+    preview_module = types.ModuleType("preview")
+    preview_module.language_models = language_models_module
+    vertexai_module = types.ModuleType("vertexai")
+    vertexai_module.init = lambda project=None, location=None: None
+    vertexai_module.preview = preview_module
+
+    fake_google_cloud = types.SimpleNamespace(translate_v2=translate_stub)
     monkeypatch.setitem(sys.modules, "google", types.SimpleNamespace(cloud=fake_google_cloud))
     monkeypatch.setitem(sys.modules, "google.cloud", fake_google_cloud)
     monkeypatch.setitem(sys.modules, "google.cloud.translate_v2", translate_stub)
-    monkeypatch.setitem(sys.modules, "google.cloud.aiplatform", aiplatform_stub)
+    monkeypatch.setitem(sys.modules, "vertexai", vertexai_module)
+    monkeypatch.setitem(sys.modules, "vertexai.preview", preview_module)
+    monkeypatch.setitem(
+        sys.modules, "vertexai.preview.language_models", language_models_module
+    )
 
     trafilatura_stub = types.SimpleNamespace(
         fetch_url=lambda url: "html",
@@ -111,3 +114,4 @@ def test_pipeline_e2e(monkeypatch):
             .one()
         )
         assert article.status == "PENDING_APPROVAL"
+        
