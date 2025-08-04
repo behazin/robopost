@@ -1,3 +1,4 @@
+import logging
 import os
 import time
 
@@ -6,6 +7,7 @@ import pika
 
 DEFAULT_BASE_DELAY = 5  # seconds
 
+logger = logging.getLogger(__name__)
 
 def get_rabbitmq_connection(max_retries: int | None = None) -> pika.BlockingConnection:
     """Get a RabbitMQ connection, retrying with exponential backoff.
@@ -29,10 +31,14 @@ def get_rabbitmq_connection(max_retries: int | None = None) -> pika.BlockingConn
     while True:
         try:
             return pika.BlockingConnection(parameters)
-        except pika.exceptions.AMQPConnectionError:
+        except pika.exceptions.AMQPConnectionError as exc:  # pragma: no cover - retry path
             attempt += 1
             if max_retries is not None and attempt >= max_retries:
-                raise
+                logger.error("Failed to connect to RabbitMQ after %s attempts", attempt)
+                raise exc
             delay = DEFAULT_BASE_DELAY * (2 ** (attempt - 1))
+            logger.warning(
+                "RabbitMQ connection failed (attempt %s), retrying in %s seconds", attempt, delay
+            )
             time.sleep(delay)
 
