@@ -22,7 +22,6 @@ def test_get_rabbitmq_connection_retries_on_failure(
         MagicMock(),  # Successful connection
     ]
 
-    # Use the correct keyword argument 'max_retries'
     get_rabbitmq_connection(max_retries=3)
 
     assert mock_connection.call_count == 3
