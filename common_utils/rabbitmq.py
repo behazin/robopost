@@ -31,7 +31,7 @@ def get_rabbitmq_connection(max_retries: int | None = None) -> pika.BlockingConn
     while True:
         try:
             return pika.BlockingConnection(parameters)
-        except pika.exceptions.AMQPConnectionError as exc:
+        except pika.exceptions.AMQPConnectionError as exc:  # pragma: no cover - retry path
             attempt += 1
             if max_retries is not None and attempt >= max_retries:
                 logger.error("Failed to connect to RabbitMQ after %s attempts", attempt)
@@ -41,3 +41,4 @@ def get_rabbitmq_connection(max_retries: int | None = None) -> pika.BlockingConn
                 "RabbitMQ connection failed (attempt %s), retrying in %s seconds", attempt, delay
             )
             time.sleep(delay)
+
