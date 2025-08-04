@@ -2,7 +2,7 @@ import json
 import os
 import threading
 
-from common_utils import configure_logging, get_rabbitmq_connection
+from common_utils import configure_logging, decrypt_env_var, get_rabbitmq_connection
 from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import (
     Application,
@@ -55,10 +55,10 @@ def main() -> None:
     logger = configure_logging()
     logger.info("Telegram bot service starting")
 
-    token = os.getenv("TELEGRAM_BOT_TOKEN")
+    token = decrypt_env_var("TELEGRAM_BOT_TOKEN")
     admin_ids_raw = os.getenv("TELEGRAM_ADMIN_IDS", "")
     webhook_url = os.getenv("TELEGRAM_WEBHOOK_URL")
-    webhook_secret = os.getenv("TELEGRAM_WEBHOOK_SECRET")
+    webhook_secret = decrypt_env_var("TELEGRAM_WEBHOOK_SECRET")
     if not token or not admin_ids_raw or not webhook_url or not webhook_secret:
         logger.error(
             "TELEGRAM_BOT_TOKEN, TELEGRAM_ADMIN_IDS, TELEGRAM_WEBHOOK_URL, or TELEGRAM_WEBHOOK_SECRET not set",

@@ -3,3 +3,4 @@ SQLAlchemy==2.0.30
 pymysql==1.1.0
 python-json-logger==2.0.7
 python-telegram-bot==20.6
+cryptography
