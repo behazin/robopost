@@ -32,13 +32,26 @@ def main() -> None:
 
     token = os.getenv("TELEGRAM_BOT_TOKEN")
     chat_id = os.getenv("TELEGRAM_ADMIN_CHAT_ID")
-    if not token or not chat_id:
-        logger.error("TELEGRAM_BOT_TOKEN or TELEGRAM_ADMIN_CHAT_ID not set")
+    webhook_url = os.getenv("TELEGRAM_WEBHOOK_URL")
+    webhook_secret = os.getenv("TELEGRAM_WEBHOOK_SECRET")
+    if not token or not chat_id or not webhook_url or not webhook_secret:
+        logger.error(
+            "TELEGRAM_BOT_TOKEN, TELEGRAM_ADMIN_CHAT_ID, TELEGRAM_WEBHOOK_URL, or TELEGRAM_WEBHOOK_SECRET not set"
+        )
         return
 
     application = Application.builder().token(token).build()
     application.add_handler(CallbackQueryHandler(handle_callback))
-    thread = threading.Thread(target=application.run_polling, daemon=True)
+
+    def run_webhook() -> None:
+        application.run_webhook(
+            listen="0.0.0.0",
+            port=int(os.getenv("PORT", "8080")),
+            webhook_url=webhook_url,
+            secret_token=webhook_secret,
+        )
+
+    thread = threading.Thread(target=run_webhook, daemon=True)
     thread.start()
 
     bot = Bot(token=token)
